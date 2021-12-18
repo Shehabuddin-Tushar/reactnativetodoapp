@@ -1,18 +1,23 @@
 import { StatusBar } from 'expo-status-bar';
-import React,{useState} from 'react';
+import React,{useState,useEffect} from 'react';
 import { Alert,FlatList,StyleSheet, Text, View,Image,TouchableOpacity,ScrollView,SafeAreaView,Button,TextInput } from 'react-native';
 import { Link, NativeRouter,Routes,Route } from 'react-router-native';
 import Doctor from './components/Doctor';
 import Home from './components/Home';
 import Icon from 'react-native-vector-icons/MaterialIcons'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 const COLORS={primary:"#1f1453",white:"#fff"} 
 export default function App() {
         const [mytext,setMytext]=useState('');
         const[todos,setTodos]=useState([
-          {id:1,task:"first item",completed:false},
-          {id:2,task:"second item",completed:false},
+          
         ]);
-
+        useEffect(()=>{
+          getDatafromuserdevice();
+        },[]);
+        useEffect(()=>{
+          storeDatainuserdevice(todos);    
+        },[todos])
         const additem=()=>{
           if(mytext==""){
              Alert.alert("Error","please input todo")
@@ -73,10 +78,36 @@ export default function App() {
               </View>
           )
         }
+
+        const storeDatainuserdevice = async (todos) => {
+          try {
+            const stringifyTodos=JSON.stringify(todos)
+            await AsyncStorage.setItem('todos', stringifyTodos)
+          } catch (e) {
+            console.log(e)
+            // saving error
+          }
+        }
+
+        
+const getDatafromuserdevice = async () => {
+  try {
+    const todos = await AsyncStorage.getItem('todos')
+    if(todos !== null) {
+      // value previously stored
+      setTodos(JSON.parse(todos))
+    }
+  } catch(e) {
+    // error reading value
+    console.log(e)
+  }
+}
+
+
   return (
     <SafeAreaView style={{flex:1,background:COLORS.white}}>
        <View style={styles.header}>
-          <Text style={{fontWeight:"bold",fontSize:20,color:COLORS.primary}}>Todo app</Text>
+          <Text style={{fontWeight:"bold",fontSize:20,color:COLORS.primary}}>Bazar Sodai</Text>
            <Icon name="delete" size={25} color="red" onPress={allitemdelete}/>
        </View>
        <FlatList
@@ -147,7 +178,7 @@ const styles = StyleSheet.create({
   iconContainer:{
     height:50,
     width:50,
-    backgroundColor:COLORS.primary,
+    backgroundColor:"green",
     borderRadius:25,
     elevation:40,
     justifyContent:"center",
